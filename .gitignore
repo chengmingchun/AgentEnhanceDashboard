@@ -6,3 +6,5 @@ dashboard.db-*
 .DS_Store
 tmp/
 dist/
+__pycache__/
+*.py[cod]

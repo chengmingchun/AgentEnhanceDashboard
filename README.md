@@ -1,6 +1,6 @@
 # AI 辅助研发成效看板
 
-一个用于展示 AI 辅助研发成效的单页看板项目。前端是单个 `index.html`，后端使用 Go 标准库托管页面，并使用 SQLite 存储看板数据。
+用于展示 AI 辅助研发成效的单页看板项目。前端是单个 `index.html`，后端提供 Go 与 Python 两种实现，数据统一存储在 SQLite。
 
 ## 功能
 
@@ -15,15 +15,31 @@
 
 ## 技术栈
 
-- Go 1.22+
-- SQLite
-- `modernc.org/sqlite` 纯 Go SQLite 驱动
-- 原生 HTML / CSS / JavaScript
+- 前端：原生 HTML / CSS / JavaScript，单文件交付
+- 数据库：SQLite
+- Go 后端：Go 1.22+，`modernc.org/sqlite`
+- Python 后端：Python 3.10+，仅使用标准库
 
-## 本地运行
+## Python 后端设计
+
+Python 后端在 `python_backend/` 目录下，按职责分层：
+
+| 文件 | 职责 |
+| --- | --- |
+| `config.py` | 环境变量与运行配置 |
+| `models.py` | 领域模型与 API 输出转换 |
+| `database.py` | SQLite 连接工厂、迁移、种子数据初始化 |
+| `repository.py` | Repository 抽象与 SQLite 实现 |
+| `service.py` | 应用服务层，承载用例逻辑 |
+| `http_app.py` | HTTP Controller、路由与应用工厂 |
+| `seed.py` | 初始化样例数据 |
+
+设计上使用了 Repository、Service Layer、Application Factory、Connection Factory 等模式。后续如果要接入真实研发流水线、MR 平台或用户系统，可以优先扩展 Repository 或 Service，不需要改动页面与 HTTP 协议层。
+
+## 使用 Python 后端运行
 
 ```bash
-go run .
+python run_python.py
 ```
 
 默认访问：
@@ -44,28 +60,32 @@ http://localhost:8080/healthz
 http://localhost:8080/api/records
 ```
 
-## 配置
+Windows PowerShell 自定义端口与数据库路径：
 
-环境变量：
+```powershell
+$env:PORT="9000"
+$env:SQLITE_PATH="./data/dashboard.db"
+python run_python.py
+```
+
+## 使用 Go 后端运行
+
+```bash
+go run .
+```
+
+构建：
+
+```bash
+go build -o ai-rd-dashboard .
+```
+
+## 配置
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `PORT` | `8080` | HTTP 服务端口 |
 | `SQLITE_PATH` | `dashboard.db` | SQLite 数据库文件路径 |
-
-示例：
-
-```bash
-PORT=9000 SQLITE_PATH=./data/dashboard.db go run .
-```
-
-Windows PowerShell：
-
-```powershell
-$env:PORT="9000"
-$env:SQLITE_PATH="./data/dashboard.db"
-go run .
-```
 
 ## 数据表
 
@@ -85,14 +105,16 @@ go run .
 | `record_date` | 记录日期 |
 | `status` | MR 状态 |
 
-## 构建
+## 接口
 
-```bash
-go build -o ai-rd-dashboard .
-```
+### `GET /api/records`
 
-运行构建产物：
+返回所有看板记录，按日期倒序排列。
 
-```bash
-./ai-rd-dashboard
+### `GET /healthz`
+
+返回服务健康状态：
+
+```json
+{"status":"ok"}
 ```
