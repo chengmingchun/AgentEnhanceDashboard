@@ -1,0 +1,8 @@
+dashboard.db
+dashboard.db-*
+*.sqlite
+*.sqlite3
+.env
+.DS_Store
+tmp/
+dist/

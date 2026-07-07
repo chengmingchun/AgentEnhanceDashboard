@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 辅助研发成效看板</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05070b;
+      --bg-2: #0c111c;
+      --panel: rgba(20, 27, 42, 0.72);
+      --panel-strong: rgba(24, 33, 52, 0.92);
+      --line: rgba(255, 255, 255, 0.1);
+      --line-strong: rgba(255, 255, 255, 0.18);
+      --text: #f5f7fb;
+      --muted: rgba(245, 247, 251, 0.62);
+      --quiet: rgba(245, 247, 251, 0.42);
+      --accent: #6ee7f9;
+      --accent-2: #a7f3d0;
+      --accent-3: #f7c948;
+      --danger: #fb7185;
+      --shadow: 0 26px 80px rgba(0, 0, 0, 0.38);
+      --control: rgba(255, 255, 255, 0.07);
+      --control-hover: rgba(255, 255, 255, 0.12);
+      --table: rgba(255, 255, 255, 0.045);
+      --chip: rgba(255, 255, 255, 0.08);
+      --good: #73e6b1;
+      --warn: #f2c96d;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f5f6f8;
+      --bg-2: #ffffff;
+      --panel: rgba(255, 255, 255, 0.76);
+      --panel-strong: rgba(255, 255, 255, 0.94);
+      --line: rgba(21, 31, 48, 0.11);
+      --line-strong: rgba(21, 31, 48, 0.18);
+      --text: #111827;
+      --muted: rgba(17, 24, 39, 0.66);
+      --quiet: rgba(17, 24, 39, 0.43);
+      --accent: #007aff;
+      --accent-2: #0f9f6e;
+      --accent-3: #a16207;
+      --danger: #e11d48;
+      --shadow: 0 24px 70px rgba(31, 41, 55, 0.12);
+      --control: rgba(17, 24, 39, 0.06);
+      --control-hover: rgba(17, 24, 39, 0.1);
+      --table: rgba(17, 24, 39, 0.035);
+      --chip: rgba(17, 24, 39, 0.07);
+      --good: #047857;
+      --warn: #a16207;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% -8%, rgba(110, 231, 249, 0.22), transparent 28rem),
+        radial-gradient(circle at 88% 0%, rgba(167, 243, 208, 0.13), transparent 28rem),
+        linear-gradient(140deg, var(--bg), var(--bg-2));
+      color: var(--text);
+      font-family: var(--font);
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    .shell {
+      min-height: calc(100vh - 64px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(30px);
+    }
+
+    [data-theme="light"] .shell {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58));
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #071018;
+      background:
+        linear-gradient(135deg, #f8fafc 0%, #6ee7f9 52%, #a7f3d0 100%);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.75), 0 18px 32px rgba(0, 122, 255, 0.18);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ghost-button,
+    .icon-button,
+    .tab-button {
+      border: 1px solid var(--line);
+      background: var(--control);
+      color: var(--text);
+      transition: transform 160ms ease, background 160ms ease, border 160ms ease;
+    }
+
+    .ghost-button {
+      min-height: 40px;
+      border-radius: 999px;
+      padding: 0 14px;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+    }
+
+    .ghost-button:hover,
+    .icon-button:hover,
+    .tab-button:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+      background: var(--control-hover);
+    }
+
+    .content {
+      padding: 22px;
+    }
+
+    .overview {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero-panel,
+    .metric,
+    .filters,
+    .lower-panel,
+    .stats-board {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(24px);
+    }
+
+    .hero-panel {
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 292px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -34% 18%;
+      height: 260px;
+      background: linear-gradient(90deg, transparent, rgba(110, 231, 249, 0.18), rgba(167, 243, 208, 0.12), transparent);
+      filter: blur(18px);
+      transform: rotate(-4deg);
+      pointer-events: none;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 6px rgba(167, 243, 208, 0.1);
+    }
+
+    .hero-copy h2 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(34px, 4.2vw, 58px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .hero-copy p {
+      margin: 16px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      border-radius: 999px;
+      padding: 0 12px;
+      color: var(--muted);
+      background: var(--chip);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 139px;
+      border-radius: 20px;
+      padding: 18px;
+      display: grid;
+      align-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .metric::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 58%);
+      pointer-events: none;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+      position: relative;
+    }
+
+    .metric strong {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1;
+      letter-spacing: 0;
+      position: relative;
+    }
+
+    .metric small {
+      color: var(--quiet);
+      font-size: 12px;
+      position: relative;
+    }
+
+    .metric.wide {
+      grid-column: span 2;
+      min-height: 124px;
+    }
+
+    .filters {
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: 1.25fr repeat(4, minmax(132px, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--control);
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .field select option {
+      color: #111827;
+      background: #ffffff;
+    }
+
+    .lower-panel {
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .panel-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--control);
+    }
+
+    .tab-button {
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
+
+    .tab-button.active {
+      color: #071018;
+      background: linear-gradient(135deg, #f8fafc, var(--accent), var(--accent-2));
+      border-color: transparent;
+      box-shadow: 0 10px 24px rgba(0, 122, 255, 0.14);
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      backdrop-filter: blur(16px);
+    }
+
+    tr {
+      transition: background 140ms ease;
+    }
+
+    tbody tr:hover {
+      background: var(--table);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .name-cell {
+      display: grid;
+      gap: 4px;
+    }
+
+    .name-cell strong {
+      font-size: 14px;
+    }
+
+    .name-cell span {
+      color: var(--quiet);
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 0 9px;
+      background: var(--chip);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .score {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 110px;
+    }
+
+    .score-bar {
+      width: 56px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--control);
+      overflow: hidden;
+    }
+
+    .score-bar i {
+      display: block;
+      height: 100%;
+      width: var(--score-width);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: inherit;
+    }
+
+    .problem {
+      max-width: 260px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .stats-board {
+      display: none;
+      border-top: 1px solid var(--line);
+      background: transparent;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 0;
+      padding: 18px;
+    }
+
+    .stats-board.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .rank-panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .rank-panel h4 {
+      margin: 0 0 14px;
+      font-size: 14px;
+    }
+
+    .rank-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 118px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 34px;
+    }
+
+    .rank-row b {
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rank-track {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--control);
+    }
+
+    .rank-track i {
+      display: block;
+      height: 100%;
+      width: var(--rank-width);
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .rank-row span {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+      min-width: 72px;
+    }
+
+    .empty {
+      display: none;
+      padding: 44px 18px 54px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty.active {
+      display: block;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 0 18px 18px;
+    }
+
+    .summary-item {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--control);
+      padding: 13px;
+    }
+
+    .summary-item span {
+      display: block;
+      color: var(--quiet);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .summary-item b {
+      font-size: 18px;
+    }
+
+    @media (max-width: 1100px) {
+      .overview {
+        grid-template-columns: 1fr;
+      }
+
+      .filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .filters .ghost-button {
+        grid-column: span 2;
+      }
+
+      .stats-board.active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        width: min(100% - 18px, 1480px);
+        padding: 9px 0 18px;
+      }
+
+      .shell {
+        border-radius: 20px;
+      }
+
+      .topbar,
+      .panel-head {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar {
+        display: grid;
+        padding: 18px;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .content {
+        padding: 14px;
+      }
+
+      .hero-panel {
+        padding: 18px;
+        border-radius: 18px;
+        min-height: 340px;
+      }
+
+      .hero-copy h2 {
+        font-size: 38px;
+      }
+
+      .metrics-grid,
+      .filters,
+      .summary-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .metric.wide,
+      .filters .ghost-button {
+        grid-column: auto;
+      }
+
+      .tabs {
+        width: 100%;
+      }
+
+      .tab-button {
+        flex: 1;
+      }
+
+      .rank-row {
+        grid-template-columns: 82px 1fr 54px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 16.2 9.8 11l3.1 3.1L19 7.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 20h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1>AI 辅助研发成效看板</h1>
+            <p>聚合 MR、代码产出、效率提升与质量反馈，让研发提效从感觉变成证据。</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="ghost-button" id="exportBtn" type="button">导出当前视图</button>
+          <button class="icon-button" id="themeToggle" type="button" aria-label="切换浅色深色">
+            <svg id="themeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.4-6.4L17 7M7 17l-1.4 1.4M18.4 18.4 17 17M7 7 5.6 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="overview" aria-label="总体效果">
+          <div class="hero-panel">
+            <div class="section-kicker"><i class="pulse-dot"></i><span>Realtime Engineering Signal</span></div>
+            <div class="hero-copy">
+              <h2>把每一次辅助编码沉淀成团队资产。</h2>
+              <p>按需求、MR、人员、小组和时间维度追踪 AI 参与研发的真实成效。默认展示近两周样例数据，可直接替换为后端接口或流水线采集结果。</p>
+            </div>
+            <div class="hero-meta" id="heroMeta"></div>
+          </div>
+
+          <div class="metrics-grid" id="metricsGrid"></div>
+        </section>
+
+        <section class="filters" aria-label="筛选检索">
+          <div class="field">
+            <label for="queryInput">检索</label>
+            <input id="queryInput" type="search" placeholder="需求 / MR / 问题" />
+          </div>
+          <div class="field">
+            <label for="fromInput">开始时间</label>
+            <input id="fromInput" type="date" />
+          </div>
+          <div class="field">
+            <label for="toInput">结束时间</label>
+            <input id="toInput" type="date" />
+          </div>
+          <div class="field">
+            <label for="ownerSelect">人员</label>
+            <select id="ownerSelect"></select>
+          </div>
+          <div class="field">
+            <label for="groupSelect">小组</label>
+            <select id="groupSelect"></select>
+          </div>
+          <button class="ghost-button" id="resetBtn" type="button">重置</button>
+        </section>
+
+        <section class="lower-panel">
+          <div class="panel-head">
+            <div>
+              <h3>需求与 MR 明细</h3>
+              <p id="tableHint">按当前筛选展示研发活动。</p>
+            </div>
+            <div class="tabs" role="tablist" aria-label="切换视图">
+              <button class="tab-button active" type="button" data-tab="table">明细</button>
+              <button class="tab-button" type="button" data-tab="people">按人统计</button>
+              <button class="tab-button" type="button" data-tab="groups">按组统计</button>
+            </div>
+          </div>
+
+          <div class="summary-strip" id="summaryStrip"></div>
+
+          <div class="table-wrap" id="tableView">
+            <table>
+              <thead>
+                <tr>
+                  <th>需求名称</th>
+                  <th>MR 名称</th>
+                  <th>负责人</th>
+                  <th>所属小组</th>
+                  <th>AI 生成代码数</th>
+                  <th>效率提升</th>
+                  <th>评分</th>
+                  <th>遇到的问题</th>
+                  <th>时间</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="emptyState">当前筛选下没有记录。</div>
+
+          <div class="stats-board" id="peopleView"></div>
+          <div class="stats-board" id="groupsView"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let records = [
+      {
+        requirement: "智能工单优先级排序",
+        mr: "feat: ranking pipeline with prompt guard",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1287",
+        owner: "林越",
+        group: "cos",
+        lines: 1860,
+        efficiency: 34,
+        score: 4.7,
+        problem: "领域词召回不稳，补充了评测集与回退策略",
+        date: "2026-07-08",
+        status: "已合并"
+      },
+      {
+        requirement: "灰度发布配置生成器",
+        mr: "feat: rollout composer and policy preview",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1269",
+        owner: "顾辰",
+        group: "d5",
+        lines: 1320,
+        efficiency: 28,
+        score: 4.4,
+        problem: "JSON Schema 边界提示过宽，增加模板约束",
+        date: "2026-07-07",
+        status: "已合并"
+      },
+      {
+        requirement: "接口回归用例自动补全",
+        mr: "test: generated contract coverage for payment APIs",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1261",
+        owner: "陈珂",
+        group: "cos",
+        lines: 2430,
+        efficiency: 41,
+        score: 4.8,
+        problem: "Mock 数据命名混乱，人工统一语义标签",
+        date: "2026-07-06",
+        status: "验证中"
+      },
+      {
+        requirement: "研发知识库检索优化",
+        mr: "perf: hybrid search rerank and snippets",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1248",
+        owner: "苏禾",
+        group: "d5",
+        lines: 970,
+        efficiency: 22,
+        score: 4.1,
+        problem: "历史文档格式不一，清洗耗时高于预期",
+        date: "2026-07-04",
+        status: "已合并"
+      },
+      {
+        requirement: "埋点指标口径校验",
+        mr: "feat: metric consistency assistant",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1239",
+        owner: "邵宁",
+        group: "cos",
+        lines: 760,
+        efficiency: 19,
+        score: 3.9,
+        problem: "跨端字段别名太多，仍需产品侧确认口径",
+        date: "2026-07-02",
+        status: "已合并"
+      },
+      {
+        requirement: "前端异常聚类诊断",
+        mr: "feat: crash cluster insight panel",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1226",
+        owner: "顾辰",
+        group: "d5",
+        lines: 1510,
+        efficiency: 31,
+        score: 4.5,
+        problem: "堆栈相似度阈值需要结合线上样本微调",
+        date: "2026-06-30",
+        status: "验证中"
+      },
+      {
+        requirement: "权限策略差异分析",
+        mr: "feat: policy diff explainer",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1212",
+        owner: "林越",
+        group: "cos",
+        lines: 1180,
+        efficiency: 26,
+        score: 4.3,
+        problem: "策略 DSL 缺少注释，生成解释需人工复核",
+        date: "2026-06-28",
+        status: "已合并"
+      },
+      {
+        requirement: "构建失败自动诊断",
+        mr: "fix: ci failure classifier and hints",
+        mrUrl: "https://git.example.com/ai-platform/workbench/-/merge_requests/1198",
+        owner: "陈珂",
+        group: "d5",
+        lines: 890,
+        efficiency: 24,
+        score: 4.2,
+        problem: "少量日志噪声误判为依赖问题",
+        date: "2026-06-25",
+        status: "已合并"
+      }
+    ];
+
+    const els = {
+      query: document.getElementById("queryInput"),
+      from: document.getElementById("fromInput"),
+      to: document.getElementById("toInput"),
+      owner: document.getElementById("ownerSelect"),
+      group: document.getElementById("groupSelect"),
+      reset: document.getElementById("resetBtn"),
+      tbody: document.getElementById("tbody"),
+      metrics: document.getElementById("metricsGrid"),
+      summary: document.getElementById("summaryStrip"),
+      heroMeta: document.getElementById("heroMeta"),
+      tableHint: document.getElementById("tableHint"),
+      tableView: document.getElementById("tableView"),
+      peopleView: document.getElementById("peopleView"),
+      groupsView: document.getElementById("groupsView"),
+      empty: document.getElementById("emptyState"),
+      tabs: Array.from(document.querySelectorAll(".tab-button")),
+      themeToggle: document.getElementById("themeToggle"),
+      exportBtn: document.getElementById("exportBtn")
+    };
+
+    const formatter = new Intl.NumberFormat("zh-CN");
+    let activeTab = "table";
+
+    init();
+
+    async function init() {
+      const savedTheme = localStorage.getItem("ai-rd-theme");
+      if (savedTheme) {
+        document.documentElement.dataset.theme = savedTheme;
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+        document.documentElement.dataset.theme = "light";
+      }
+
+      await loadRecords();
+
+      const dates = records.map((item) => item.date).sort();
+      els.from.value = dates[Math.max(0, dates.length - 6)] || "";
+      els.to.value = dates[dates.length - 1] || "";
+      fillSelect(els.owner, ["全部人员", ...unique(records.map((item) => item.owner))]);
+      fillSelect(els.group, ["全部小组", ...unique(records.map((item) => item.group))]);
+
+      [els.query, els.from, els.to, els.owner, els.group].forEach((node) => {
+        node.addEventListener("input", render);
+        node.addEventListener("change", render);
+      });
+
+      els.reset.addEventListener("click", () => {
+        els.query.value = "";
+        els.from.value = dates[0];
+        els.to.value = dates[dates.length - 1];
+        els.owner.value = "全部人员";
+        els.group.value = "全部小组";
+        render();
+      });
+
+      els.tabs.forEach((button) => {
+        button.addEventListener("click", () => {
+          activeTab = button.dataset.tab;
+          els.tabs.forEach((tab) => tab.classList.toggle("active", tab === button));
+          switchView();
+        });
+      });
+
+      els.themeToggle.addEventListener("click", () => {
+        const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem("ai-rd-theme", next);
+      });
+
+      els.exportBtn.addEventListener("click", exportCurrentView);
+      render();
+    }
+
+    async function loadRecords() {
+      try {
+        const response = await fetch("/api/records", { headers: { "Accept": "application/json" } });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        records = data.map((item) => ({
+          ...item,
+          lines: Number(item.lines) || 0,
+          efficiency: Number(item.efficiency) || 0,
+          score: Number(item.score) || 0
+        }));
+      } catch (error) {
+        console.warn("使用内置样例数据，SQLite 接口暂不可用：", error);
+      }
+    }
+
+    function fillSelect(select, values) {
+      select.innerHTML = values.map((value) => `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`).join("");
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, "zh-CN"));
+    }
+
+    function filteredRecords() {
+      const keyword = els.query.value.trim().toLowerCase();
+      return records.filter((item) => {
+        const inTime = (!els.from.value || item.date >= els.from.value) && (!els.to.value || item.date <= els.to.value);
+        const inOwner = els.owner.value === "全部人员" || item.owner === els.owner.value;
+        const inGroup = els.group.value === "全部小组" || item.group === els.group.value;
+        const inKeyword = !keyword || [item.requirement, item.mr, item.problem, item.owner, item.group].join(" ").toLowerCase().includes(keyword);
+        return inTime && inOwner && inGroup && inKeyword;
+      });
+    }
+
+    function render() {
+      const data = filteredRecords();
+      const totals = summarize(data);
+      renderMetrics(totals, data);
+      renderHeroMeta(totals, data);
+      renderSummary(totals);
+      renderTable(data);
+      renderStats(data);
+      els.tableHint.textContent = `当前 ${data.length} 条记录，覆盖 ${unique(data.map((item) => item.owner)).length} 位研发同学。`;
+      switchView();
+    }
+
+    function summarize(data) {
+      const lines = sum(data, "lines");
+      const avgEfficiency = average(data, "efficiency");
+      const avgScore = average(data, "score");
+      const merged = data.filter((item) => item.status === "已合并").length;
+      return {
+        count: data.length,
+        lines,
+        avgEfficiency,
+        avgScore,
+        merged,
+        owners: unique(data.map((item) => item.owner)).length,
+        groups: unique(data.map((item) => item.group)).length
+      };
+    }
+
+    function renderMetrics(totals, data) {
+      const topGroup = topBy(data, "group", "lines");
+      const metrics = [
+        ["AI 生成代码行", formatter.format(totals.lines), "按当前筛选聚合"],
+        ["效率提升", `${totals.avgEfficiency.toFixed(1)}%`, "以需求评估口径均值计算"],
+        ["平均效果评分", totals.avgScore.toFixed(1), "满分 5.0，包含质量与可维护性"],
+        ["已合并 MR", `${totals.merged}/${totals.count}`, "验证中记录仍计入产出"],
+        ["高贡献小组", topGroup ? topGroup.name.toUpperCase() : "-", topGroup ? `${formatter.format(topGroup.value)} 行 AI 生成代码` : "暂无数据"]
+      ];
+
+      els.metrics.innerHTML = metrics.map((item, index) => `
+        <article class="metric ${index === 4 ? "wide" : ""}">
+          <span>${item[0]}</span>
+          <strong>${item[1]}</strong>
+          <small>${item[2]}</small>
+        </article>
+      `).join("");
+    }
+
+    function renderHeroMeta(totals, data) {
+      const latest = data.map((item) => item.date).sort().at(-1) || "-";
+      els.heroMeta.innerHTML = [
+        `最新更新 ${latest}`,
+        `${totals.owners} 人参与`,
+        `${totals.groups} 个小组`,
+        `${totals.count} 个需求样本`
+      ].map((text) => `<span class="meta-pill">${escapeHTML(text)}</span>`).join("");
+    }
+
+    function renderSummary(totals) {
+      const items = [
+        ["需求数", totals.count],
+        ["参与人数", totals.owners],
+        ["覆盖小组", totals.groups],
+        ["平均评分", totals.avgScore.toFixed(1)]
+      ];
+
+      els.summary.innerHTML = items.map(([label, value]) => `
+        <div class="summary-item">
+          <span>${label}</span>
+          <b>${value}</b>
+        </div>
+      `).join("");
+    }
+
+    function renderTable(data) {
+      els.tbody.innerHTML = data.map((item) => `
+        <tr>
+          <td>
+            <div class="name-cell">
+              <strong>${escapeHTML(item.requirement)}</strong>
+              <span>${escapeHTML(item.status)}</span>
+            </div>
+          </td>
+          <td><a href="${escapeHTML(item.mrUrl)}" target="_blank" rel="noopener">${escapeHTML(item.mr)}</a></td>
+          <td>${escapeHTML(item.owner)}</td>
+          <td><span class="tag">${escapeHTML(item.group)}</span></td>
+          <td>${formatter.format(item.lines)}</td>
+          <td>${item.efficiency}%</td>
+          <td>
+            <span class="score">
+              <span class="score-bar" style="--score-width:${item.score / 5 * 100}%"><i></i></span>
+              <b>${item.score.toFixed(1)}</b>
+            </span>
+          </td>
+          <td><div class="problem">${escapeHTML(item.problem)}</div></td>
+          <td>${item.date}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderStats(data) {
+      els.peopleView.innerHTML = buildStatsHTML(data, "owner", "人员使用情况", "按人汇总 AI 生成代码、MR 数和平均评分");
+      els.groupsView.innerHTML = buildStatsHTML(data, "group", "小组使用情况", "按小组汇总 AI 生成代码、MR 数和平均效率");
+    }
+
+    function buildStatsHTML(data, key, title, subtitle) {
+      const rows = Object.values(data.reduce((acc, item) => {
+        if (!acc[item[key]]) {
+          acc[item[key]] = { name: item[key], lines: 0, count: 0, efficiency: 0, score: 0 };
+        }
+        acc[item[key]].lines += item.lines;
+        acc[item[key]].count += 1;
+        acc[item[key]].efficiency += item.efficiency;
+        acc[item[key]].score += item.score;
+        return acc;
+      }, {})).map((row) => ({
+        ...row,
+        avgEfficiency: row.count ? row.efficiency / row.count : 0,
+        avgScore: row.count ? row.score / row.count : 0
+      })).sort((a, b) => b.lines - a.lines);
+
+      const max = Math.max(1, ...rows.map((row) => row.lines));
+      const list = rows.length ? rows.map((row) => `
+        <div class="rank-row">
+          <b title="${escapeHTML(row.name)}">${escapeHTML(row.name)}</b>
+          <div class="rank-track" style="--rank-width:${Math.max(8, row.lines / max * 100)}%"><i></i></div>
+          <span>${formatter.format(row.lines)} 行</span>
+        </div>
+      `).join("") : `<div class="empty active">暂无统计数据。</div>`;
+
+      const second = rows.length ? rows.map((row) => `
+        <div class="rank-row">
+          <b title="${escapeHTML(row.name)}">${escapeHTML(row.name)}</b>
+          <div class="rank-track" style="--rank-width:${Math.max(8, row.avgEfficiency)}%"><i></i></div>
+          <span>${row.avgEfficiency.toFixed(1)}% / ${row.avgScore.toFixed(1)}</span>
+        </div>
+      `).join("") : `<div class="empty active">暂无统计数据。</div>`;
+
+      return `
+        <article class="rank-panel">
+          <h4>${title}</h4>
+          <p style="margin: -6px 0 16px; color: var(--muted); font-size: 13px;">${subtitle}</p>
+          <div class="rank-list">${list}</div>
+        </article>
+        <article class="rank-panel">
+          <h4>效率与评分</h4>
+          <p style="margin: -6px 0 16px; color: var(--muted); font-size: 13px;">右侧为平均效率提升 / 平均评分</p>
+          <div class="rank-list">${second}</div>
+        </article>
+      `;
+    }
+
+    function switchView() {
+      const data = filteredRecords();
+      const isEmpty = data.length === 0;
+      els.tableView.style.display = activeTab === "table" && !isEmpty ? "block" : "none";
+      els.empty.classList.toggle("active", activeTab === "table" && isEmpty);
+      els.peopleView.classList.toggle("active", activeTab === "people");
+      els.groupsView.classList.toggle("active", activeTab === "groups");
+    }
+
+    function exportCurrentView() {
+      const data = filteredRecords();
+      const header = ["需求名称", "MR名称", "负责人", "所属小组", "AI生成代码数", "效率提升", "生成效果评分", "遇到的问题", "时间"];
+      const rows = data.map((item) => [
+        item.requirement,
+        item.mr,
+        item.owner,
+        item.group,
+        item.lines,
+        `${item.efficiency}%`,
+        item.score,
+        item.problem,
+        item.date
+      ]);
+      const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
+      const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ai-rd-dashboard-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function topBy(data, key, metric) {
+      const map = data.reduce((acc, item) => {
+        acc[item[key]] = (acc[item[key]] || 0) + item[metric];
+        return acc;
+      }, {});
+      return Object.entries(map)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)[0];
+    }
+
+    function sum(data, key) {
+      return data.reduce((total, item) => total + item[key], 0);
+    }
+
+    function average(data, key) {
+      return data.length ? sum(data, key) / data.length : 0;
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function csvCell(value) {
+      return `"${String(value).replaceAll('"', '""')}"`;
+    }
+  </script>
+</body>
+</html>
