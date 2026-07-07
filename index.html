@@ -193,9 +193,10 @@
 
     .overview {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      margin-bottom: 18px;
+      grid-template-columns: 0.58fr 1.42fr;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: start;
     }
 
     .hero-panel,
@@ -209,12 +210,12 @@
     }
 
     .hero-panel {
-      border-radius: 24px;
-      padding: 24px;
-      min-height: 292px;
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 164px;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 18px;
+      align-content: space-between;
+      gap: 10px;
       overflow: hidden;
       position: relative;
     }
@@ -222,9 +223,9 @@
     .hero-panel::after {
       content: "";
       position: absolute;
-      inset: auto -8% -34% 18%;
-      height: 260px;
-      background: linear-gradient(90deg, transparent, rgba(110, 231, 249, 0.18), rgba(167, 243, 208, 0.12), transparent);
+      inset: auto -12% -48% 14%;
+      height: 190px;
+      background: linear-gradient(90deg, transparent, rgba(110, 231, 249, 0.1), rgba(167, 243, 208, 0.08), transparent);
       filter: blur(18px);
       transform: rotate(-4deg);
       pointer-events: none;
@@ -236,7 +237,7 @@
       gap: 8px;
       width: fit-content;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
     }
@@ -251,24 +252,24 @@
 
     .hero-copy h2 {
       margin: 0;
-      max-width: 880px;
-      font-size: clamp(34px, 4.2vw, 58px);
-      line-height: 1.08;
+      max-width: 560px;
+      font-size: clamp(22px, 1.8vw, 28px);
+      line-height: 1.16;
       letter-spacing: 0;
     }
 
     .hero-copy p {
-      margin: 16px 0 0;
-      max-width: 760px;
+      margin: 8px 0 0;
+      max-width: 560px;
       color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
+      font-size: 12px;
+      line-height: 1.5;
     }
 
     .hero-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       position: relative;
       z-index: 1;
     }
@@ -277,25 +278,27 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      min-height: 36px;
+      min-height: 30px;
       border-radius: 999px;
-      padding: 0 12px;
+      padding: 0 10px;
       color: var(--muted);
       background: var(--chip);
       border: 1px solid var(--line);
+      font-size: 12px;
       white-space: nowrap;
     }
 
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-self: start;
     }
 
     .metric {
-      min-height: 139px;
-      border-radius: 20px;
-      padding: 18px;
+      min-height: 112px;
+      border-radius: 16px;
+      padding: 14px;
       display: grid;
       align-content: space-between;
       overflow: hidden;
@@ -312,12 +315,12 @@
 
     .metric span {
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       position: relative;
     }
 
     .metric strong {
-      font-size: clamp(28px, 4vw, 44px);
+      font-size: clamp(24px, 2.3vw, 34px);
       line-height: 1;
       letter-spacing: 0;
       position: relative;
@@ -325,19 +328,19 @@
 
     .metric small {
       color: var(--quiet);
-      font-size: 12px;
+      font-size: 11px;
       position: relative;
     }
 
     .metric.wide {
-      grid-column: span 2;
-      min-height: 124px;
+      grid-column: auto;
+      min-height: 112px;
     }
 
     .filters {
-      border-radius: 22px;
-      padding: 16px;
-      margin-bottom: 18px;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
       display: grid;
       grid-template-columns: 1.25fr repeat(4, minmax(132px, 1fr)) auto;
       gap: 12px;
@@ -685,13 +688,13 @@
       }
 
       .hero-panel {
-        padding: 18px;
+        padding: 16px;
         border-radius: 18px;
-        min-height: 340px;
+        min-height: 220px;
       }
 
       .hero-copy h2 {
-        font-size: 38px;
+        font-size: 30px;
       }
 
       .metrics-grid,
@@ -749,10 +752,10 @@
       <div class="content">
         <section class="overview" aria-label="总体效果">
           <div class="hero-panel">
-            <div class="section-kicker"><i class="pulse-dot"></i><span>Realtime Engineering Signal</span></div>
+            <div class="section-kicker"><i class="pulse-dot"></i><span>Engineering Signal</span></div>
             <div class="hero-copy">
-              <h2>把每一次辅助编码沉淀成团队资产。</h2>
-              <p>按需求、MR、人员、小组和时间维度追踪 AI 参与研发的真实成效。默认展示近两周样例数据，可直接替换为后端接口或流水线采集结果。</p>
+              <h2>研发辅助成效概览</h2>
+              <p>按需求、MR、人员、小组和时间维度追踪辅助研发的真实成效，当前数据来自 SQLite 后端。</p>
             </div>
             <div class="hero-meta" id="heroMeta"></div>
           </div>
