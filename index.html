@@ -156,9 +156,19 @@
       justify-content: flex-end;
     }
 
+    .nav {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--control);
+    }
+
     .ghost-button,
     .icon-button,
-    .tab-button {
+    .tab-button,
+    .nav-link {
       border: 1px solid var(--line);
       background: var(--control);
       color: var(--text);
@@ -171,6 +181,13 @@
       padding: 0 14px;
     }
 
+    .nav-link {
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 0 13px;
+      font-size: 13px;
+    }
+
     .icon-button {
       width: 42px;
       height: 42px;
@@ -181,10 +198,25 @@
 
     .ghost-button:hover,
     .icon-button:hover,
-    .tab-button:hover {
+    .tab-button:hover,
+    .nav-link:hover {
       transform: translateY(-1px);
       border-color: var(--line-strong);
       background: var(--control-hover);
+    }
+
+    .nav-link.active {
+      color: #071018;
+      background: linear-gradient(135deg, #f8fafc, var(--accent), var(--accent-2));
+      border-color: transparent;
+    }
+
+    .route-page {
+      display: none;
+    }
+
+    .route-page.active {
+      display: block;
     }
 
     .content {
@@ -192,11 +224,8 @@
     }
 
     .overview {
-      display: grid;
-      grid-template-columns: 0.58fr 1.42fr;
-      gap: 14px;
+      display: block;
       margin-bottom: 14px;
-      align-items: start;
     }
 
     .hero-panel,
@@ -210,6 +239,7 @@
     }
 
     .hero-panel {
+      display: none;
       border-radius: 20px;
       padding: 16px;
       min-height: 164px;
@@ -229,6 +259,10 @@
       filter: blur(18px);
       transform: rotate(-4deg);
       pointer-events: none;
+    }
+
+    .overview .hero-panel {
+      display: none;
     }
 
     .section-kicker {
@@ -296,9 +330,9 @@
     }
 
     .metric {
-      min-height: 112px;
-      border-radius: 16px;
-      padding: 14px;
+      min-height: 96px;
+      border-radius: 14px;
+      padding: 13px;
       display: grid;
       align-content: space-between;
       overflow: hidden;
@@ -334,7 +368,7 @@
 
     .metric.wide {
       grid-column: auto;
-      min-height: 112px;
+      min-height: 96px;
     }
 
     .filters {
@@ -615,10 +649,40 @@
     }
 
     .summary-strip {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       padding: 0 18px 18px;
+    }
+
+    .analytics-page {
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .analytics-page.active {
+      display: grid;
+    }
+
+    .analytics-head {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      padding: 18px;
+      backdrop-filter: blur(24px);
+    }
+
+    .analytics-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .analytics-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .summary-item {
@@ -700,12 +764,16 @@
       .metrics-grid,
       .filters,
       .summary-strip {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .metric.wide,
       .filters .ghost-button {
         grid-column: auto;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
       }
 
       .tabs {
@@ -719,6 +787,10 @@
       .rank-row {
         grid-template-columns: 82px 1fr 54px;
       }
+    }
+
+    body .overview .hero-panel {
+      display: none;
     }
   </style>
 </head>
@@ -739,6 +811,10 @@
           </div>
         </div>
         <div class="actions">
+          <nav class="nav" aria-label="页面导航">
+            <button class="nav-link active" type="button" data-route="dashboard">明细</button>
+            <button class="nav-link" type="button" data-route="analytics">统计</button>
+          </nav>
           <button class="ghost-button" id="exportBtn" type="button">导出当前视图</button>
           <button class="icon-button" id="themeToggle" type="button" aria-label="切换浅色深色">
             <svg id="themeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -750,78 +826,81 @@
       </header>
 
       <div class="content">
-        <section class="overview" aria-label="总体效果">
-          <div class="hero-panel">
-            <div class="section-kicker"><i class="pulse-dot"></i><span>Engineering Signal</span></div>
-            <div class="hero-copy">
-              <h2>研发辅助成效概览</h2>
-              <p>按需求、MR、人员、小组和时间维度追踪辅助研发的真实成效，当前数据来自 SQLite 后端。</p>
+        <section class="route-page active" id="dashboardPage" data-page="dashboard">
+          <section class="overview" aria-label="总体效果">
+            <div class="hero-panel">
+              <div class="section-kicker"><i class="pulse-dot"></i><span>Engineering Signal</span></div>
+              <div class="hero-copy">
+                <h2>研发辅助成效概览</h2>
+                <p>按需求、MR、人员、小组和时间维度追踪辅助研发的真实成效，当前数据来自 SQLite 后端。</p>
+              </div>
+              <div class="hero-meta" id="heroMeta"></div>
             </div>
-            <div class="hero-meta" id="heroMeta"></div>
-          </div>
 
-          <div class="metrics-grid" id="metricsGrid"></div>
+            <div class="metrics-grid" id="metricsGrid"></div>
+          </section>
+
+          <section class="filters" aria-label="筛选检索">
+            <div class="field">
+              <label for="queryInput">检索</label>
+              <input id="queryInput" type="search" placeholder="需求 / MR / 问题" />
+            </div>
+            <div class="field">
+              <label for="fromInput">开始时间</label>
+              <input id="fromInput" type="date" />
+            </div>
+            <div class="field">
+              <label for="toInput">结束时间</label>
+              <input id="toInput" type="date" />
+            </div>
+            <div class="field">
+              <label for="ownerSelect">人员</label>
+              <select id="ownerSelect"></select>
+            </div>
+            <div class="field">
+              <label for="groupSelect">小组</label>
+              <select id="groupSelect"></select>
+            </div>
+            <button class="ghost-button" id="resetBtn" type="button">重置</button>
+          </section>
+
+          <section class="lower-panel">
+            <div class="panel-head">
+              <div>
+                <h3>需求与 MR 明细</h3>
+                <p id="tableHint">按当前筛选展示研发活动。</p>
+              </div>
+            </div>
+
+            <div class="summary-strip" id="summaryStrip"></div>
+
+            <div class="table-wrap" id="tableView">
+              <table>
+                <thead>
+                  <tr>
+                    <th>需求名称</th>
+                    <th>MR 名称</th>
+                    <th>负责人</th>
+                    <th>所属小组</th>
+                    <th>AI 生成代码数</th>
+                    <th>效率提升</th>
+                    <th>评分</th>
+                    <th>遇到的问题</th>
+                    <th>时间</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="emptyState">当前筛选下没有记录。</div>
+          </section>
         </section>
 
-        <section class="filters" aria-label="筛选检索">
-          <div class="field">
-            <label for="queryInput">检索</label>
-            <input id="queryInput" type="search" placeholder="需求 / MR / 问题" />
+        <section class="analytics-page route-page" id="analyticsPage" data-page="analytics">
+          <div class="analytics-head">
+            <h2>统计分析</h2>
+            <p>聚焦人员与小组维度的使用情况。统计基于当前筛选条件，回到明细页可调整时间、人员、小组或关键词。</p>
           </div>
-          <div class="field">
-            <label for="fromInput">开始时间</label>
-            <input id="fromInput" type="date" />
-          </div>
-          <div class="field">
-            <label for="toInput">结束时间</label>
-            <input id="toInput" type="date" />
-          </div>
-          <div class="field">
-            <label for="ownerSelect">人员</label>
-            <select id="ownerSelect"></select>
-          </div>
-          <div class="field">
-            <label for="groupSelect">小组</label>
-            <select id="groupSelect"></select>
-          </div>
-          <button class="ghost-button" id="resetBtn" type="button">重置</button>
-        </section>
-
-        <section class="lower-panel">
-          <div class="panel-head">
-            <div>
-              <h3>需求与 MR 明细</h3>
-              <p id="tableHint">按当前筛选展示研发活动。</p>
-            </div>
-            <div class="tabs" role="tablist" aria-label="切换视图">
-              <button class="tab-button active" type="button" data-tab="table">明细</button>
-              <button class="tab-button" type="button" data-tab="people">按人统计</button>
-              <button class="tab-button" type="button" data-tab="groups">按组统计</button>
-            </div>
-          </div>
-
-          <div class="summary-strip" id="summaryStrip"></div>
-
-          <div class="table-wrap" id="tableView">
-            <table>
-              <thead>
-                <tr>
-                  <th>需求名称</th>
-                  <th>MR 名称</th>
-                  <th>负责人</th>
-                  <th>所属小组</th>
-                  <th>AI 生成代码数</th>
-                  <th>效率提升</th>
-                  <th>评分</th>
-                  <th>遇到的问题</th>
-                  <th>时间</th>
-                </tr>
-              </thead>
-              <tbody id="tbody"></tbody>
-            </table>
-          </div>
-          <div class="empty" id="emptyState">当前筛选下没有记录。</div>
-
           <div class="stats-board" id="peopleView"></div>
           <div class="stats-board" id="groupsView"></div>
         </section>
@@ -954,12 +1033,15 @@
       groupsView: document.getElementById("groupsView"),
       empty: document.getElementById("emptyState"),
       tabs: Array.from(document.querySelectorAll(".tab-button")),
+      navLinks: Array.from(document.querySelectorAll(".nav-link")),
+      pages: Array.from(document.querySelectorAll(".route-page")),
       themeToggle: document.getElementById("themeToggle"),
       exportBtn: document.getElementById("exportBtn")
     };
 
     const formatter = new Intl.NumberFormat("zh-CN");
     let activeTab = "table";
+    let activeRoute = "dashboard";
 
     init();
 
@@ -1000,6 +1082,14 @@
           switchView();
         });
       });
+
+      els.navLinks.forEach((button) => {
+        button.addEventListener("click", () => {
+          location.hash = `#/${button.dataset.route}`;
+        });
+      });
+      window.addEventListener("hashchange", syncRoute);
+      syncRoute();
 
       els.themeToggle.addEventListener("click", () => {
         const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -1202,10 +1292,22 @@
     function switchView() {
       const data = filteredRecords();
       const isEmpty = data.length === 0;
-      els.tableView.style.display = activeTab === "table" && !isEmpty ? "block" : "none";
-      els.empty.classList.toggle("active", activeTab === "table" && isEmpty);
-      els.peopleView.classList.toggle("active", activeTab === "people");
-      els.groupsView.classList.toggle("active", activeTab === "groups");
+      els.tableView.style.display = !isEmpty ? "block" : "none";
+      els.empty.classList.toggle("active", isEmpty);
+      els.peopleView.classList.toggle("active", activeRoute === "analytics");
+      els.groupsView.classList.toggle("active", activeRoute === "analytics");
+    }
+
+    function syncRoute() {
+      const nextRoute = location.hash.replace("#/", "") || "dashboard";
+      activeRoute = ["dashboard", "analytics"].includes(nextRoute) ? nextRoute : "dashboard";
+      els.navLinks.forEach((button) => {
+        button.classList.toggle("active", button.dataset.route === activeRoute);
+      });
+      els.pages.forEach((page) => {
+        page.classList.toggle("active", page.dataset.page === activeRoute);
+      });
+      switchView();
     }
 
     function exportCurrentView() {
